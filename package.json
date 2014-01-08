@@ -1,0 +1,21 @@
+{
+  "name": "fetching-indexer",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flippyhead/fetching.git"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.6.3"
+  },
+  "dependencies": {
+    "monk": "~0.7.1",
+    "underscore": "~1.4.4",
+    "express": "3.x",
+    "elasticsearch":"*",
+    "nodemon": "*"
+  },
+  "engines": {
+    "node": ">=0.10.24"
+  }
+}
