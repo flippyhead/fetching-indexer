@@ -20,52 +20,41 @@ es = new require('elasticsearch').Client
 
 users = monk('localhost:3003/meteor').get('users')
 
-app.post 'sessions', (req, res) ->
-  email = req.body.email
-
-  users.findOne('emails.address': email)
-    .on 'success', (user) ->
-
-
 app.post '/documents', (req, res) ->
   {url, title, body, token} = req.body
   updatedAt = new Date()
 
-  console.log token
-  console.log url
-
-  id = crypto.createHash('md5').update(url).digest('hex')
-
   users.findOne('services.resume.loginTokens.token': token)
     .on 'success', (user) ->
-      console.log user
       userId = user._id
 
-      es.exists
-        index: 'documents'
+      es.search
+        index: userId
         type: 'document'
-        routing: userId,
-        id: id
-      , (error, exists) ->
+        body:
+          query:
+            term:
+              "url.lookup": url
+      , (error, response) ->
 
         console.log "Indexing " + url
 
-        if exists is true
+        if response.hits?.total > 0
+          first = response.hits.hits[0]
+
           es.update
-            index: 'documents'
-            routing: userId,
-            type: 'document',
-            id: id
+            index: userId
+            type: 'document'
+            id: first._id
             body:
               doc:
-                {body, title, userId, updatedAt}
+                {body, title, updatedAt}
           , indexedResponse(req, res)
+
         else
           es.create
-            index: 'documents'
-            routing: userId,
-            type: 'document',
-            id: id
+            index: userId
+            type: 'document'
             body:
               {body, title, url, userId, updatedAt, createdAt: updatedAt}
           , indexedResponse(req, res)
